@@ -3,10 +3,10 @@
 
 
 # import packages
-from keras.api.layers import Conv2D, MaxPooling2D, Dense, Flatten
-from keras._tf_keras.keras.preprocessing.image import ImageDataGenerator
-from keras.api.callbacks import ModelCheckpoint
-from keras.api.models import Sequential
+from keras.layers import Conv2D, MaxPooling2D, Dense, Flatten
+from keras.preprocessing.image import ImageDataGenerator
+from keras.callbacks import ModelCheckpoint
+from keras.models import Sequential
 import matplotlib.pyplot as plt
 
 # dataset paths

@@ -2,7 +2,6 @@
 # GUI second page
 # Drowsiness detector algorithm - based on blinks, yawns, travel duration and time
 
-
 # import packages
 from imutils.video import VideoStream
 from keras.api.models import load_model
@@ -35,14 +34,8 @@ EMAIL_THRESHOLD = 3  # number of alarms before sending email
 
 class DrowsinessDetector:
 
-    def __init__(self, vs, username, contact_name, contact_email):
+    def __init__(self, vs):
         """This function initializes the object properties, creates the window, and starts the video loop thread"""
-
-        # driver and contact details (for sending email)
-        self.username = username
-        self.contact_name = contact_name
-        self.contact_email = contact_email
-
         self.vs = vs  # video stream
         self.thread = None  # video loop thread
         self.stop_event = None  # flag to indicate whether the app is closed
@@ -50,7 +43,7 @@ class DrowsinessDetector:
 
         # initialize the tkinter object
         self.root = tk.Tk()
-        self.root.title("WakeApp")
+        self.root.title("SLEEP ALERT APP")
         self.root.resizable(False, False)  # disable resizing
         self.root.wm_protocol("WM_DELETE_WINDOW", self.on_close)  # set a callback to handle when the window is closed by the X button
 
@@ -60,7 +53,7 @@ class DrowsinessDetector:
         self.thread.start()
 
         # top message label
-        self.message = tk.Label(self.root, fg="#085768", text=f"Hi {self.username}, drive carefully!", font=('Goudy pld style', 20, 'bold'))
+        self.message = tk.Label(self.root, fg="#085768", text=f"Hi, drive carefully!",font=('Goudy pld style', 20, 'bold'))
         self.message.pack(side="top", expand="yes", padx=10, pady=10)
 
         # stop button
@@ -139,13 +132,9 @@ class DrowsinessDetector:
 
                         additional_text = ""  # additional text to the top label
 
-                        # email
-                        if alarm_counter == EMAIL_THRESHOLD:  # check if the alarm sounded a specific number of times - this way the email can be sent only once
-                            threading.Thread(target=drowsiness_alert.send_email, args=(self.username, self.contact_name, self.contact_email), daemon=True).start()  # start a thread to send an email to emergency contact in the background
-                            additional_text = " (email was sent)"  # update the additional text to indicate that the emergency email was sent
-
                         threading.Thread(target=self.show_alert, args=(additional_text,), daemon=True).start()  # start a thread to show the alert text for a few seconds in the background
 
+                        self.display_drowsiness_message()
                 else:  # not classified as drowsy
                     alarm_on = False  # reset the alarm
 
@@ -169,6 +158,11 @@ class DrowsinessDetector:
                 self.panel.configure(image=frame)
                 self.panel.image = frame
 
+    def display_drowsiness_message(self):
+        """This function displays the drowsiness message on the GUI"""
+        self.message.config(text="You are feeling drowsy! Please take a break!", fg="red")
+        self.show_alert()  # Show alert as well to create a flashing alert
+
     def show_alert(self, additional_text=""):
         """This function shows the alert message for a few seconds"""
         old_message, old_color = self.message['text'], self.message['fg']
@@ -185,11 +179,11 @@ class DrowsinessDetector:
         self.root.destroy()
 
 
-def start_driving(username, contact_name, contact_email):
+def start_driving():
     """This function starts the video stream and the drowsiness detection loop"""
 
     vs = VideoStream(src=0).start()  # start the video stream thread, 0 indicates index of webcam on system
     time.sleep(1.0)  # pause for a second to allow the camera sensor to warm up
 
-    dd = DrowsinessDetector(vs, username, contact_name, contact_email)  # start the drowsiness detection loop
+    dd = DrowsinessDetector(vs)  # start the drowsiness detection loop
     dd.root.mainloop()  # infinite loop waiting for an event to occur and process the event as long as the window is not closed
